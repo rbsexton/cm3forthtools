@@ -1,0 +1,18 @@
+((
+ Init is elsewhere
+))
+
+\ Define 
+	
+$40004000 CONSTANT _PORTA
+$40005000 CONSTANT _PORTB
+$40006000 CONSTANT _PORTC
+$40007000 CONSTANT _PORTD
+$40024000 CONSTANT _PORTE
+$40025000 CONSTANT _PORTF
+$40025000 CONSTANT _PORTG
+
+: gpiowrite \ payload port mask -- 
+	2 lshift + ! 
+;  
+
