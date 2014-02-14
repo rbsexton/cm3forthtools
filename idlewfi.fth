@@ -9,8 +9,9 @@
  so that other things can happen.  Eventually we get here, and there is a WFI. 
 ))
 
-: wfiaction 
-  begin
-        [ASM wfi ASM] PAUSE
-  again 
-;
+
+watchdog? [if]
+: wfiaction begin [ASM wfi ASM] PAUSE PetWatchDog AGAIN ;
+[else] 
+: wfiaction begin [ASM wfi ASM] PAUSE AGAIN ;
+[then]
