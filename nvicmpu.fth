@@ -1,5 +1,5 @@
 ((
- Words for NVIC manipulation from the prompt
+ Words for NVIC manipulation, MPU work, and general system management.
 ))
 
 : STIR _SCS scsSTIR + ; \ Software Trigger Interrupt reg
@@ -16,5 +16,11 @@ L$1: b L$1
 	next,
 END-CODE
 
+(( --------------  Stack Control/Security Changes )) 
+
+: psp@ sp_process sys@ ; \ Thread Stack.
+: msp@ sp_main sys@    ; \ Exception Stack.
+
+: threadmode control sys@ 1 or  control sys! ; \ Yield supervisor privs. 
 
 
