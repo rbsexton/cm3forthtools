@@ -17,7 +17,6 @@ on top of the user area.   That should catch most over-under-runs before things 
 
 I'm not sure how to make the MPU do something graceful, as we have no page fault mechanisms.
 
-
 -- Aligning Tasks 
 
 Compile-time tasks are allocated via reserve, which grows down
@@ -29,25 +28,29 @@ a boundary.
 
 ))
 
-\ Take a freshly-created task and fill in the regions to make analysis easier.
-$20 equ fill-fence-size
-   
-: task-fill ( c-addr -- ) DUP
-    SP-SIZE - RP-SIZE - DUP    \ Two copies of the bottom of RP.
-    RP-SIZE          [char] r fill
-    fill-fence-size  [char] x fill \ Do it again.
-
-    DUP SP-SIZE - DUP
-    SP-SIZE          [char] d fill
-    fill-fence-size  [char] x fill  
-
-    DUP /tcb + UP-SIZE /tcb -                   [char] u fill
-    UP-SIZE + fill-fence-size - fill-fence-size [char] x fill
-    ;
 
 \ Word-Based fill.  A little funny because it mimics the semantics of fill
 : lfill ( addr n k -- ) -ROT bounds do DUP I ! 4 +loop DROP ;
 
+\ Take a freshly-created task and fill in the regions to make analysis easier.
+$20 equ fill-fence-size
+up-size /tcb - equ up-free
 
+: task-limits ( c-addr -- rbot sbot utop )
+   TASK-S0 - 
+   DUP rp-size + 
+   DUP sp-size + up-size +
+   ;
+  
+: makefence ( c-addr ) fill-fence-size  $2170615a lfill ;
 
- 
+: task-fill ( c-addr -- ) task-limits
+   dup up-free - up-free $20552020 lfill 
+   fill-fence-size - makefence
+
+   dup sp-size $20442020 lfill
+   makefence
+
+   dup rp-size $20522020 lfill
+   makefence 
+   ;
