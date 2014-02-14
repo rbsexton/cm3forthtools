@@ -28,8 +28,10 @@ a boundary.
 
 ))
 
+: alignhere ( n -- ) DUP DUP 1 - HERE AND -   SWAP MOD ALLOT ; \ Power of two required.
+: align32 ( -- ) $20 alignhere ;  
 
-\ Word-Based fill.  A little funny because it mimics the semantics of fill
+\ Word-Based fill.  A little funny because it mimics the semantics of (c)fill
 : lfill ( addr n k -- ) -ROT bounds do DUP I ! 4 +loop DROP ;
 
 \ Take a freshly-created task and fill in the regions to make analysis easier.
