@@ -45,6 +45,8 @@ $20 equ fill-fence-size
     UP-SIZE + fill-fence-size - fill-fence-size [char] x fill
     ;
 
+\ Word-Based fill.  A little funny because it mimics the semantics of fill
+: lfill ( addr n k -- ) -ROT bounds do DUP I ! 4 +loop DROP ;
 
 
 
