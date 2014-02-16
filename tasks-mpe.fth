@@ -3,7 +3,7 @@
  and tools to work with tasks within that environment.
 ))
 
-(( 
+(( ----------------------------------------------------------------------------- 
 
 The task consists of User, Data Stack, and Return Stack.
 
@@ -26,7 +26,7 @@ RESERVE is what allocates task blocks at compile-time.   It grows
 down, so thats simpler.  Just reserve the right amount to force it to
 a boundary.
 
-))
+------------------------------------------------------------------------------- ))
 
 : alignhere ( n -- ) DUP DUP 1 - HERE AND -   SWAP MOD ALLOT ; \ Power of two required.
 : align32 ( -- ) $20 alignhere ;  
@@ -44,15 +44,20 @@ up-size /tcb - equ up-free
    DUP sp-size + up-size +
    ;
   
+(( Filling and fencing are separate.   Its not safe to fill a running task ))
+
 : makefence ( c-addr ) fill-fence-size  $2170615a lfill ;
+: task-fence ( caddr ) task-limits 
+   fill-fence-size - makefence
+   makefence
+   makefence
+; 
 
 : task-fill ( c-addr -- ) task-limits
-   dup up-free - up-free $20552020 lfill 
-   fill-fence-size - makefence
-
-   dup sp-size $20442020 lfill
-   makefence
-
-   dup rp-size $20522020 lfill
-   makefence 
+   up-free - up-free $20552020 lfill 
+   sp-size $20442020 lfill
+   rp-size $20522020 lfill
    ;
+
+: taskdump ( c-addr ) TASK-S0 - $80 - TASK-S0 up-size + $80 + ldump ; \ Don't overrun memory.  Thats bad.
+
