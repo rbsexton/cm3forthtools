@@ -68,3 +68,14 @@ up-size /tcb - equ up-free
 
 : usermode CONTROL sys@ 1 OR CONTROL sys! ;
 \ Privmode is part of SAPI.      
+
+(( ----------------------------------------------------------------------------- 
+   MPU Tools 
+   ----------------------------------------------------------------------------- ))
+
+_SCS $D90 + equ _MPU
+
+: mpuget ( n -- addr attr ) >R  _MPU
+  dup $8 + R> swap !
+  dup $C + @ swap $10 + @ ; 
+: mpudump $8 0 do I mpuget . . cr loop ; 
