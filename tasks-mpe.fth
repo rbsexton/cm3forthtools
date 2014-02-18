@@ -47,8 +47,9 @@ up-size /tcb - equ up-free
 (( Filling and fencing are separate.   Its not safe to fill a running task ))
 
 : makefence ( c-addr ) fill-fence-size  $2170615a lfill ;
+: fenceuadj ( c-addr -- c-addr ) fill-fence-size - ; 
 : task-fence ( caddr ) task-limits 
-   fill-fence-size - makefence
+   fenceuadj makefence
    makefence
    makefence
 ; 
@@ -78,4 +79,23 @@ _SCS $D90 + equ _MPU
 : mpuget ( n -- addr attr ) >R  _MPU
   dup $8 + R> swap !
   dup $C + @ swap $10 + @ ; 
-: mpudump $8 0 do I mpuget . . cr loop ; 
+: mpudump $8 0 do I mpuget . . cr loop ;
+
+$2000016 equ mpu32b_rofence 
+
+: (tcb.mputab) up@ tcb.mputab ;
+: (tcb.mpuslot) ( n -- c-addr ) 8 *  (tcb.mputab)  + ;
+
+: fillmpuslots ( 4..n c-addr -- ) $20 bounds DO I ! 8 +LOOP ; 
+: assignregions ( c-addr ) 4 0 DO DUP I 2+ $10 OR SWAP +! 8 + LOOP DROP ;  
+: attrlist 0  mpu32b_rofence  mpu32b_rofence  mpu32b_rofence ; 
+
+: mpufences 
+  (tcb.mputab) >R
+  0 self task-limits fenceuadj   \ Add a bogus region.
+  R@ fillmpuslots  R@ assignregions
+  attrlist R> 4+ fillmpuslots
+;
+
+\ Untested.
+
