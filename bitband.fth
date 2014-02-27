@@ -8,13 +8,14 @@
 #***
 ))
 
-[required] bitbandalias [if]
-: bitbandalias \ addr -- addr
+internal 
+: bbalias \ addr -- addr
+    [ASM L: bbalias ASM] 
     dup $f0000000 and
     $2000000 +
     swap $fffff and #5 lshift +
 ;
-[then]
+external
 
 ((
 #****h* cm3/bitband
@@ -27,10 +28,9 @@
 ))
 
 
-[required] bitband [if]
 : bitband \ addr bit -- addr 
   #2 lshift swap
-  bitbandalias +
+  bbalias +
   ;
 [then]
 
