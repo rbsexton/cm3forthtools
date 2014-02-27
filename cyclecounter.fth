@@ -29,4 +29,8 @@
   	; 
 
 
+: usage  
+  base @ decimal
+  getusage s>d  <# [char] % hold # # [char] . hold #s #> 
+  type space base ! ;
 
