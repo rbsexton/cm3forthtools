@@ -63,14 +63,6 @@ up-size /tcb - equ up-free
 : taskdump ( c-addr ) TASK-S0 - $80 - TASK-S0 up-size + $80 + ldump ; \ Don't overrun memory.  Thats bad.
 
 (( ----------------------------------------------------------------------------- 
-   Tools for working with priveleged/user mode.  Note that there is no 
-   way for a user mode task to become priv'd, so that has to be done via SVC.
-   ----------------------------------------------------------------------------- ))
-
-: usermode CONTROL sys@ 1 OR CONTROL sys! ;
-\ Privmode is part of SAPI.      
-
-(( ----------------------------------------------------------------------------- 
    MPU Tools 
    ----------------------------------------------------------------------------- ))
 
