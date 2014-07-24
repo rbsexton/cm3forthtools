@@ -14,6 +14,8 @@
 # a: don't require the pre-allocation of bits
 # b: can use an arbitrary lock value to give you meaningful information about who has the lock.
 #***
+# Read Arm DHT0008A (ID081709)
+#
 ))
 
 CODE getlock \ addr val -- t/f
@@ -28,12 +30,14 @@ CODE getlock \ addr val -- t/f
 	
 L$1: strex tos, r1, [ tos ] \ Try and claim the lock
      \ 0 is success, 1 is fail.
+     dmb # 0 
      mov tos, # 0 
      sub tos, r1  \ Subtract 1 to get forth-standard conventions 
      next,   
 END-CODE
 
-: releaselock ( addr -- ) 
+: releaselock ( addr -- )
+  [ASM dmb # 0 ASM] 
   0 SWAP ! 
 ;
 
