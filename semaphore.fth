@@ -26,7 +26,7 @@ L$1:	 ldrex r2, [ r1 ] \ Load the lock value
 	 add r2, r0  
 	 strex r3, r2, [ r1 ] \ Try and claim the lock
      			      \ 0 is success, 1 is fail.
-         cmp r3, # 0 
+         cmp r3, # 1 
 	 b .eq L$1 
      	 next,   
 END-CODE
