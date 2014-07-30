@@ -23,20 +23,22 @@
 ))
 
 CODE getlock \ addr val -- t/f
-	 mov r1, tos       \ Initialize the 'lock taken' value
-	 mov r2, # 1		   \ A handy constant
-	 ldr tos, [ psp ], # 4 \ Now that TOS is r1, pop it off
-	 ldrex   r0, [ tos ] \ Load the lock value
-	 cmp r0, # 0         \ Is the lock free?
-	 b .eq L$1           \ If so, jump to the strex
-	 mov tos, # 0        \ Return fail.
+	 mov r0, tos           \ Save a copy of 'val'
+	 ldr tos, [ psp ], # 4 \ Refresh TOS.
+
+L$1:	 ldrex   r1, [ tos ] \ Load the lock value
+	 cmp r1, # 0         \ Is the lock free?
+	 
+	 b .eq L$2           \ If so, jump to the strex
+	 clrex               \ Clear the monitor
+	 mov tos, # 0 
 	 bx LR	            \ Bail.
 	
-L$1: strex tos, r1, [ tos ] \ Try and claim the lock
-     \ 0 is success, 1 is fail.
-     mov tos, # 0 
-     sub tos, r1  \ Subtract 1 to get forth-standard conventions 
-     next,   
+L$2:	strex r2, r0, [ tos ] \ Try and claim the lock
+     			      \ 0 is success, 1 is fail.
+	b .ne L$1 
+     	mov tos, # -1
+     	next,   
 END-CODE
 
 : releaselock ( addr -- )
