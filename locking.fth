@@ -9,12 +9,16 @@
 # Takes in the address of the lock, and returns true
 # or false, depending on whether or not the lock was
 # a success.   Adapted from the arm docs
+#
+# On the Stellaris M3/M4 parts, LDREX/STREX will fail if
+# an exception slips in there between LDREX and STREX
 # 
 # This can also be done with bit-banded bits, but LDREX/STREX
 # a: don't require the pre-allocation of bits
 # b: can use an arbitrary lock value to give you meaningful information about who has the lock.
 #***
 # Read Arm DHT0008A (ID081709)
+# Note that parts with multiple CPUs require a DMB
 #
 ))
 
@@ -30,14 +34,12 @@ CODE getlock \ addr val -- t/f
 	
 L$1: strex tos, r1, [ tos ] \ Try and claim the lock
      \ 0 is success, 1 is fail.
-     dmb # 0 
      mov tos, # 0 
      sub tos, r1  \ Subtract 1 to get forth-standard conventions 
      next,   
 END-CODE
 
 : releaselock ( addr -- )
-  [ASM dmb # 0 ASM] 
   0 SWAP ! 
 ;
 
