@@ -1,4 +1,4 @@
-(
+((
 #****h* cm3/semaphore
 # SYNOPSIS
 # 
@@ -30,8 +30,4 @@ L$1:	 ldrex r2, [ r1 ] \ Load the lock value
 	 b .eq L$1 
      	 next,   
 END-CODE
-
-: releaselock ( addr -- )
-  0 SWAP ! 
-;
 
