@@ -22,7 +22,7 @@
 #
 ))
 
-CODE getlock \ addr val -- t/f
+CODE GETLOCK \ addr val -- t/f
 	 mov r0, tos           \ Save a copy of 'val'
 	 ldr tos, [ psp ], # 4 \ Refresh TOS.
 
@@ -45,3 +45,16 @@ END-CODE
   0 SWAP ! 
 ;
 
+(( I Don't know where else to put this. ))
+\ Safely read a 64-bit counter.    
+CODE D@SAFE
+	 str tos, [ psp, # $-04 ] ! \ Push a little
+L$3: ldr r0, [ tos, # 4 ] \ Get the MSB
+     ldr r1, [ tos, # 0 ] \ LSB
+     ldr r2, [ tos, # 4 ] \ Check value
+     cmp r0, r2
+     b .ne L$3
+     str r1, [ psp, # 0 ] 
+     mov tos, r2
+     next,
+END-CODE     
