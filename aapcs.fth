@@ -113,9 +113,9 @@ END-CODE
 \ **********************************************************************
 \ Wrappers for functions with no returns.
 \ **********************************************************************
-: CALL0 call0--n drop ; 
-: CALL1 call1--n drop ; 
-: CALL2 call2--n drop ; 
-: CALL3 call3--n drop ; 
-: CALL4 call4--n drop ; 
+: CALL0-- call0--n drop ; 
+: CALL1-- call1--n drop ; 
+: CALL2-- call2--n drop ; 
+: CALL3-- call3--n drop ; 
+: CALL4-- call4--n drop ; 
 
