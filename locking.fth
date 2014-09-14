@@ -54,7 +54,7 @@ L$3: ldr r0, [ tos, # 4 ] \ Get the MSB
      ldr r2, [ tos, # 4 ] \ Check value
      cmp r0, r2
      b .ne L$3
-     str r0, [ psp, # 0 ] 
-     mov tos, r1
+     str r1, [ psp, # 0 ] 
+     mov tos, r0
      next,
 END-CODE     
