@@ -1,0 +1,119 @@
+diff --git a/Cortex/MultiCortex.fth b/Cortex/MultiCortex.fth
+index 8ef78f6..4625f78 100755
+--- a/target/tiva/Cortex/MultiCortex.fth
++++ b/target/tiva/Cortex/MultiCortex.fth
+@@ -93,21 +93,23 @@ struct /TCB	\ -- size
+   ptr tcb.link		\ link to next task ; MUST BE FIRST
+   ptr tcb.ssp	        \ Saved Stack Pointer
+   int tcb.status	\ status word
++  ptr tcb.bbstatus	\ xt of word which is event handler
+   int tcb.msrc		\ message source
+   int tcb.mesg		\ message
+   ptr tcb.event		\ xt of word which is event handler
+ end-struct
+ 
+-\ bit masks for the status cell
++
++\ bit masks for the status cell - Only use for reads!
+ $0001 equ run-mask  run-mask invert equ ~run-mask	\ running
+-  0 equ run-bit#
+ $0002 equ msg-mask  msg-mask invert equ ~msg-mask	\ message available
+-  1 equ msg-bit#
+ $0004 equ trg-mask  trg-mask invert equ ~trg-mask	\ event triggered
+-  2 equ trg-bit#
+ $0008 equ evt-mask  evt-mask invert equ ~evt-mask	\ event run
+-  3 equ evt-bit#
+-
++\ Define the bits as offsets against the status reg, x4 
++  0 4 * equ run-bbit#
++  1 4 * equ msg-bbit#
++  2 4 * equ trg-bbit#
++  3 4 * equ evt-bbit#
+ 
+ \ ******************
+ \ Consistency checks
+@@ -175,9 +177,11 @@ event-handler? [if]	\ if user wants the event handler
+   ldr     r0, [ up, # 0 tcb.status ]	\ look at status
+   and .s  r1, r0, # trg-mask		\ inspect event trigger bit
+   ne, if,
+-    bic     r0, r0, # trg-mask		\ clear trigger bit
+-    orr     r0, r0, # evt-mask		\ set event bit
+-    str     r0, [ up, # 0 tcb.status ]	\ restore status
++    ldr     r0, [ up, # 0 tcb.bbstatus ]
++    mov     r1, # 0 
++    str     r1, [ r0, # trg-bbit# ]    \ clear the trigger bit.
++    mov     r1, # 1
++    str     r1, [ r0, # evt-bbit# ]    \ set the event bit
+     ldr     r1, [ up, # 0 tcb.event ]	\ run event handler
+     orr     r1, r1, # 1			\ set Thumb bit
+     bx      r1
+@@ -193,11 +197,11 @@ end-code
+ 
+ : restart	\ task -- ; mark task TCB as running
+ \ *G Sets the RUN bit in the task's status cell.
+-  run-mask swap tcb.status or!  ;
++  1 swap tcb.bbstatus @ run-bbit# + ! ;
+ 
+ : halt		\ task -- ; reset running bit in TCB
+ \ *G Clears the RUN bit in the task's status cell.
+-  run-mask swap tcb.status bic!  ;
++  0 swap tcb.bbstatus @ run-bbit# + ! ;
+ 
+ : stop          \ -- ; halt oneself
+ \ *G *\fo{HALT}s the current task, and executes *\fo{PAUSE}.
+@@ -216,7 +220,7 @@ event-handler? [if]
+ 
+ : set-event	\ task --
+ \ *G Set the event trigger in task TCB.
+-  tcb.status dup @  trg-mask or  swap !
++  1 swap tcb.bbstatus @ trg-bbit# + ! 
+ ;
+ 
+ : event?	\ task -- flag
+@@ -227,7 +231,7 @@ event-handler? [if]
+ 
+ : clr-event-run	\ --
+ \ *G Reset the current task's *\fo{EVENT_RUN} flag.
+-  up@ tcb.status dup @  ~evt-mask and  swap !
++  0 up@ tcb.bbstatus @ evt-bbit# + ! 
+ ;
+ 
+ : to-event      \ xt task -- ; define action of a task
+@@ -254,15 +258,14 @@ internal
+ : (send-msg)	\ mesg task -- ; store message in task
+   self over tcb.msrc !			\ set source
+   dup
+-  tcb.status dup @  msg-mask or  swap !	\ set message bit
++  1 swap tcb.bbstatus @ msg-bbit# + !	\ set message bit
+   tcb.mesg !				\ set message
+ ;
+ 
+ : (get-message)	\ -- mesg task
+   up@ tcb.mesg @			\ message
+   up@ tcb.msrc @
+-  up@ tcb.status
+-  dup @  ~msg-mask and  swap !		\ reset message bit
++  0 up@ tcb.bbstatus msg-bbit# + !  \ reset message bit
+ ;
+ external
+ 
+@@ -319,7 +322,7 @@ For Cortex-M3+ the following register usage is the default:
+   push    { r7 r9 r11 r12, link }	\ stack used registers
+   str     rsp, [ up, # 0 tcb.ssp ]	\ save SP in TCB
+ ))
+-code init-task	\ xt task -- ; Initialise a task stack
++code init-task-base \ xt task -- ; Initialise a task stack
+ \ *G Initialise a task's stack before running it and
+ \ ** set it to execute the word whose XT is given.
+   ldr     r1, [ psp ], # 4		\ get execution address
+@@ -354,6 +357,10 @@ code init-task	\ xt task -- ; Initialise a task stack
+   next,
+ end-code
+ 
++: init-task \ xt task 
++ dup tcb.status bbalias over tcb.bbstatus !
++ init-task-base ;
++
+ : add-task      \ task -- ; insert into list
+ \ *G Add the task to the list of tasks after the current task.
+   self tcb.link @			\ save task currently pointed to
