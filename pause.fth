@@ -12,8 +12,8 @@
 \ 4.  Don't bother doing the single-multi check.
 \ 5.  Implement lazy register push.  Only push registers if switching.
 
-\ Switching to this approach from a dedicated idle task resulted in the 
-\ same CPU Utilization, but better responsiveness.
+\ Switching to to integrated WFI resulted in the same CPU Utilization with
+\ better responsiveness.   Lazy register push is a win.
 
 CODE pause	\ -- ; the scheduler itself
 \ *G The software scheduler itself.
