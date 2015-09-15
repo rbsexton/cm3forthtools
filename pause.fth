@@ -30,7 +30,7 @@ CODE pause	\ -- ; the scheduler itself
 \  it .eq
 \    bx      lr				\ single tasking so exit
 
-  mov r6, up   \ Remember who called PAUSE. 
+  mov r6, up   \ Use r6 as the working copy of the UP.
 
 \
 \ select next task to run
