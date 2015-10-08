@@ -117,3 +117,22 @@ index 8ef78f6..4625f78 100755
  : add-task      \ task -- ; insert into list
  \ *G Add the task to the list of tasks after the current task.
    self tcb.link @			\ save task currently pointed to
+
+@@ -428,10 +437,15 @@ external
+\ ** Make sure that your initialisation code includes
+\ ** *\fo{INIT-MULTI} or your code will crash.
+single                               \ tasker disabled
+-  main /tcb erase                      \ clean TCB
+-  main dup task-fence mpufences         \ Initialize the MPU entries
+-  main dup tcb.link !                  \ initialise MAIN to point to itself
+-  run-mask main tcb.status !           \ and reset status field
++  main 
++  dup /tcb erase                       \ clean TCB
++  dup task-fence                       \ Install the canaries 
++  dup mpufences                         \ Initialize the MPU entries
++  dup tcb.link !                       \ initialise MAIN to point to itself
++  run-mask over tcb.status !           \ and reset status field
++
++  dup  tcb.status bbalias               \ Calculate the base address of the bit-banded
+       status^M
+
