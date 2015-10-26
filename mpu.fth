@@ -12,6 +12,8 @@
 : msp@ sp_main sys@    ; \ Exception Stack.
 
 \ Getting into supervisor mode requires us to trap through a syscall.
+\ Note that the MPE compiler supplies the ISB that goes with 
+\ the control register write.
 : threadmode control sys@ 1 or  control sys! ; \ Yield supervisor privs. 
 : isthread?  control sys@ 1 and ; \ What state are we in now? 
 
