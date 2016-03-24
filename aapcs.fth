@@ -3,6 +3,8 @@
 \ Note that these routines push r12, or PSP, as its known by forth.
 \ According to AAPCS, thats 'ip', and reserved for use by the linker,
 \ which means that AAPCS compliant routines are free to trash it.
+\ These routines don't push r9.   Thats may be required for calling
+\ code compiled with -fpic.
 
 \ **********************************************************************
 \ Call a function that takes no args, and returns 1.  Push r0 to make
@@ -47,10 +49,8 @@ END-CODE
 \ Call a function that takes 2 args and returns 1
 \ **********************************************************************
 CODE CALL2--N \ addr arg0 arg1 -- n
-	mov r1, tos  \ Arg 1
-	ldr tos, [ psp ], # 4
-
-	mov r0, tos \ Arg 0
+	mov r1, tos          \ Arg 1
+	ldr r0, [ psp ], # 4 \ Arg 0
 
 	ldr tos, [ psp ], # 4
 	orr tos, tos, # 1 \ set Thumb bit
@@ -66,12 +66,8 @@ END-CODE
 \ **********************************************************************
 CODE CALL3--N \ addr arg0 arg1 arg2 -- n
 	mov r2, tos  \ Arg 2
-	ldr tos, [ psp ], # 4
-
-	mov r1, tos  \ Arg 1
-	ldr tos, [ psp ], # 4
-
-	mov r0, tos
+	ldr r1, [ psp ], # 4 \ Arg 1
+	ldr r0, [ psp ], # 4 \ Arg 0
 
 	ldr tos, [ psp ], # 4
 	orr tos, tos, # 1 \ set Thumb bit
@@ -85,17 +81,11 @@ END-CODE
 \ **********************************************************************
 \ Call a function that takes 4 args and returns 1
 \ **********************************************************************
-CODE CALL4--N \ addr arg0 arg1 arg2 -- n
+CODE CALL4--N \ addr arg0 arg1 arg2 arg3 -- n
 	mov r3, tos  \ Arg 3
-	ldr tos, [ psp ], # 4
-
-	mov r2, tos  \ Arg 2
-	ldr tos, [ psp ], # 4
-
-	mov r1, tos  \ Arg 1
-	ldr tos, [ psp ], # 4
-
-	mov r0, tos
+	ldr r2, [ psp ], # 4
+	ldr r1, [ psp ], # 4
+	ldr r0, [ psp ], # 4
 
 	ldr tos, [ psp ], # 4
 	orr tos, tos, # 1 \ set Thumb bit
