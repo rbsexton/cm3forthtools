@@ -36,7 +36,8 @@ L$1:	 ldrex   r1, [ tos ] \ Load the lock value
 	
 L$2:	strex r2, r0, [ tos ] \ Try and claim the lock
      			      \ 0 is success, 1 is fail.
-	b .ne L$1 
+	 cmp r2, # 0 
+	 b .ne L$1 
      	mov tos, # -1
      	next,   
 END-CODE
