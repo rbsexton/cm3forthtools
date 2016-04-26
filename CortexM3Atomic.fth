@@ -1,10 +1,11 @@
 ((
-Atomic operations for the Cortex-M CPUs.
-On Cortem-M3/M4/M7 parts, LDREX/STREX will fail if
-an exception happens in between LDREX and STREX
+Atomic operations for the Cortex-M3/M4/M7 CPUs that
+make use of LDREX/STREX.   These routines do not require
+disabling interrupts.  Interrupt disable is not available
+in unprivileged thread mode.   Responding usefully to MPU faults
+requires that the at-risk code run unprivileged.
 
-On Cortex-M0, you have to disable interrupts.   That option isn't available
-on systems where thread mode tasks run without privileges.
+On Cortex-M0, you have to disable interrupts.
 
 ldrex/strex is relatively cheap.  The only cost is a check and a retry.
 
