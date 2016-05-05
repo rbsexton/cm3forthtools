@@ -9,12 +9,10 @@
  so that other things can happen.  Eventually we get here, and there is a WFI. 
 ))
 
-
-watchdog? [if]
-: wfiaction begin [ASM wfi ASM] PAUSE PetWatchDog AGAIN ;
-[else] 
-: wfiaction begin [ASM wfi ASM] PAUSE AGAIN ;
-[then]
+: wfiaction begin 
+  [ASM wfi ASM] PAUSE
+  [defined] watchdog? [if] PetWatchDog [then]
+  AGAIN ;
 
 \ An advanced word for idle.   Count running tasks, and if
 \ its more than 1, do a WFI.
@@ -28,9 +26,6 @@ watchdog? [if]
   until
   drop
 ;
-
-;
-
 
 : IDLEACTION 
   begin
