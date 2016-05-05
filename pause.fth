@@ -91,3 +91,39 @@ event-handler? [if]	\ if user wants the event handler
 [then]
   next,
 end-code
+
+\ This has to match the scheduler, above.
+code init-task	\ xt task -- ; Initialise a task stack
+\ *G Initialise a task's stack before running it and
+\ ** set it to execute the word whose XT is given.
+  ldr     r1, [ psp ], # 4		\ get execution address
+  orr     r1, r1, # 1			\ set Thumb bit
+  mov     r2, rsp			\ save return stack pointer
+
+\ Generate the RSP of the new task
+\ the next line works because TASK-U0 is greater than TASK-R0
+  sub     rsp, tos, # task-u0 task-r0 -	\ generate new task RSP
+
+  mov     r0, # 0			\ will need this many times
+
+  str     rsp, [ tos, # r0-offset ]	\ save new R0 (taskID=UP)
+  str     r0, [ tos, # 0 tcb.status ]	\ clear new task status
+
+  push    { r1 }			\ R14 LINK, push xt=link
+\ the next line works because TASK-U0 is greater than TASK-S0
+  sub     r1, tos, # task-u0 task-s0 -	\ calculate new PSP
+  sub	  r1, r1, # sp-guard cells	\ generate new PSP ; SFP003
+  push    { r1 }			\ R12, new PSP ; SFP003
+  sub	  r1, r1, # tos-cached? cells	\ generate new S0 ; SFP003
+  str     r1, [ tos, # s0-offset ]	\ that is compatible with SP!
+  push    { r0 }			\ R9
+  push    { r0 }			\ R7, new TOS for Cortex
+  str     rsp, [ tos, # 0 tcb.ssp ]	\ save RSP
+
+  mov     rsp, r2			\ restore RSP
+  ldr     tos, [ psp ], # 4		\ restore TOS
+  next,
+end-code
+
+
+
