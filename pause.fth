@@ -7,7 +7,6 @@
 
 \ This version of the scheduler has mods - 
 \ 1.  Counting task runs with a TCB run counter
-\ 2.  Using bit-banded addresses for atomic status word updates
 \ 3.  It issues a WFI if there are no runnable tasks.
 \ 4.  Don't bother doing the single-multi check.
 \ 5.  Implement lazy register push.  Only push registers if switching.
@@ -59,14 +58,11 @@ l: [schedule]run
 
   mov up, r6 \ Load up the new task pointer.
 
-  \ We know who it is.   Load up the MPU entries.
-  add r0, up, # 0 tcb.mputab   \ Calculate the position of the mpu table.
-  svc # SAPI_VEC_MPULOAD       \ Install it.
-
-  ldr r0, [ up, # 0 tcb.runcount ]      \ Bump the run counter 
-  add r0, # 1 
-  str r0, [ up, # 0 tcb.runcount ]
-
+  \ ---------------------------------------------------
+  \ Do any MPU task updates here.
+  \ ---------------------------------------------------
+  \ This is where task accounting goes.  Counters, etc.
+  \ ---------------------------------------------------
 \
 \ run selected task - sp, up, rp, ip
 \
@@ -76,14 +72,30 @@ l: [schedule]run
 event-handler? [if]	\ if user wants the event handler
 \
 \ event handler exit
+\ Note that r5 still contains the status word.
 \
   and .s  r0, r5, # trg-mask		\ inspect event trigger bit
   ne, if,
-    ldr     r0, [ up, # 0 tcb.bbstatus ]
-    mov     r1, # 0 
-    str     r1, [ r0, # trg-bbit# ]    \ clear the trigger bit.
-    mov     r1, # 1
-    str     r1, [ r0, # evt-bbit# ]    \ set the event bit
+
+	mov r0, # evt-mask
+	mov r1, # trg-mask
+
+[defined] irqsafe-usermode? [if] \ Do this atomically with ldrex/strex
+l: [evthandler]ldrex
+	ldrex   r2, [ up, # 0 tcb.status ]
+	bic     r2, r2, r0 \ clear the trigger bit.
+	orr     r2, r2, r1 \ set the event bit
+	strex   r3, r2, [ up, # 0 tcb.status ]
+	cmp     r3, # 0
+	b .ne  [evthandler]ldrex
+[else] \ If the task is running with privs, it can disable irqs.
+	cps  .id 
+ 	ldr   r2, [ up, # 0 tcb.status ]
+	bic   r2, r2, r0 \ clear the trigger bit.
+	orr   r2, r2, r1 \ set the event bit
+	str   r2, [ up, # 0 tcb.status ]
+	cps .ie
+[then]
     ldr     r1, [ up, # 0 tcb.event ]	\ run event handler
     orr     r1, r1, # 1			\ set Thumb bit
     bx      r1
