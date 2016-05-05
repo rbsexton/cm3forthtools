@@ -22,7 +22,7 @@
 #
 ))
 
-CODE GETLOCK \ addr val -- t/f
+code GETLOCK \ addr val -- t/f
 	 mov r0, tos           \ Save a copy of 'val'
 	 ldr tos, [ psp ], # 4 \ Refresh TOS.
 
@@ -40,7 +40,7 @@ L$2:	strex r2, r0, [ tos ] \ Try and claim the lock
 	 b .ne L$1 
      	mov tos, # -1
      	next,   
-END-CODE
+end-code
 
 : releaselock ( addr -- )
   0 SWAP ! 
