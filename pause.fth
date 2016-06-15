@@ -88,6 +88,7 @@ l: [evthandler]ldrex
 	strex   r3, r2, [ up, # 0 tcb.status ]
 	cmp     r3, # 0
 	b .ne  [evthandler]ldrex
+	dmb \ per ARM docs
 [else] \ If the task is running with privs, it can disable irqs.
 	cps  .id 
  	ldr   r2, [ up, # 0 tcb.status ]
