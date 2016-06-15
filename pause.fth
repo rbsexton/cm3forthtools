@@ -77,14 +77,11 @@ event-handler? [if]	\ if user wants the event handler
   and .s  r0, r5, # trg-mask		\ inspect event trigger bit
   ne, if,
 
-	mov r0, # evt-mask
-	mov r1, # trg-mask
-
 [defined] irqsafe-usermode? [if] \ Do this atomically with ldrex/strex
 l: [evthandler]ldrex
 	ldrex   r2, [ up, # 0 tcb.status ]
-	bic     r2, r2, r0 \ clear the trigger bit.
-	orr     r2, r2, r1 \ set the event bit
+	bic     r2, r2, # trg-mask \ clear the trigger bit.
+	orr     r2, r2, # evt-mask \ set the event bit
 	strex   r3, r2, [ up, # 0 tcb.status ]
 	cmp     r3, # 0
 	b .ne  [evthandler]ldrex
@@ -92,8 +89,8 @@ l: [evthandler]ldrex
 [else] \ If the task is running with privs, it can disable irqs.
 	cps  .id 
  	ldr   r2, [ up, # 0 tcb.status ]
-	bic   r2, r2, r0 \ clear the trigger bit.
-	orr   r2, r2, r1 \ set the event bit
+	bic   r2, r2, # trg-mask \ clear the trigger bit.
+	orr   r2, r2, # evt-mask \ set the event bit
 	str   r2, [ up, # 0 tcb.status ]
 	cps .ie
 [then]
