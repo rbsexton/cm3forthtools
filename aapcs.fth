@@ -1,10 +1,22 @@
 \ Wrappers for functions that comply with AAPCS
 \
+\ General Notes
+\
+\ All of these words explicitly set the thumb bit.
+\ That may or may not be required depending on the link environment.
+\ I've opted to do so because its inexpesive to do so, and not doing
+\ so could potentially cause a usage fault.
+\
+\ Cortex-M3/M4 Notes
 \ Note that these routines push r12, or PSP, as its known by forth.
 \ According to AAPCS, thats 'ip', and reserved for use by the linker,
 \ which means that AAPCS compliant routines are free to trash it.
-\ These routines don't push r9.   Thats may be required for calling
+\ These routines don't push r9.  That may be required for calling
 \ code compiled with -fpic.
+\
+\ Cortex-M0 Notes
+\ The register layout for the M0 uses r6 for PSP, so there is 
+\ no need to preserve it.
 
 \ **********************************************************************
 \ Call a function that takes no args, and returns 1.  Push r0 to make
