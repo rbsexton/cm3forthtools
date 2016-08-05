@@ -24,8 +24,8 @@
   over [asm cps .id .i asm] @ or swap ! [asm cps .ie .i asm] ;
 [then]
 
-[required] @RESETEX! [if]
-: @RESETEX! \ addr -- n 
+[required] @OFFEX! [if]
+: @OFFEX! \ addr -- n 
 \ *G Atomically retrieve and clear a semaphore value.
   0 swap  dup [asm cps .id .i asm] @ >R ! R> [asm cps .ie .i asm] ; 
 [then]
