@@ -34,7 +34,7 @@ CODE CALL0--N ( addr -- n )
 END-CODE
 [else]
 CODE CALL0--N ( addr -- n )
-	orr tos, tos, #1 \ set Thumb bit
+	orr tos, tos, # 1 \ set Thumb bit
 	push { psp, link }
 	blx tos
 	pop  { psp, link }
