@@ -3,6 +3,9 @@ cm3forthtools
 
 Cortex-M0/M3/M4 system-level Forth code
 
+Originally for the Cortex-M3, but since expanded
+to include support for the Cortex-M0. 
+
 ----------
 * CortexM0Atomic.fth - Atomic read-modify-writes (Interrupt disabling)
 * CortexM0Atomic.fth - Atomic read-modify-writes (LDREX/STREX based)
